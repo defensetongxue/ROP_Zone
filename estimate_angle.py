@@ -31,13 +31,14 @@ def coodinate2xy(coordinate_x,coordinate_y):
     pass
 
 class Zone():
-    def __init__(self,image_size=(1570,1200),
+    def __init__(self,image_size=(1600,1200),
+                 camrea_weight=1570,
                  camera_angle=2*math.pi/3,
                  sample_dense=10,
                  threshold=0.5):
         self.weight,self.height=image_size
         self.camera_angle=camera_angle
-        self.radius=self.weight/(2*math.cos(camera_angle/2))
+        self.radius=camrea_weight/(2*math.cos(camera_angle/2))
         self.sample_dense=sample_dense
         self.threshold=threshold
 
