@@ -5,8 +5,8 @@ from PIL import Image
 class ZoneProcesser():
     def __init__(self,image_size=(1600,1200),
                  camrea_weight=1570,
-                #  camera_angle=2*math.pi/3,
-                 camera_angle=math.pi/2,
+                 camera_angle=2*math.pi/3,
+                #  camera_angle=math.pi/2,
                  sample_dense=10,
                  threshold=0.5):
         self.weight,self.height=image_size
@@ -17,10 +17,10 @@ class ZoneProcesser():
 
         self.crop_padded=CropPadding()
     def _get_z(self,x,y):
-        if self.radius**2-x**2-y**2>=0:
-            return round(math.sqrt(self.radius**2-x**2-y**2))
-        print(self.radius,x,y)
-        raise
+        tmp=self.radius**2-x**2-y**2
+        if tmp>=0:
+            return round(math.sqrt(tmp))
+        return 0
     def _get_xy(self,coordinate_x,coordinate_y):
         return coordinate_x-(self.weight/2),coordinate_y-(self.height/2)
     def calculate_angle(self,ridge_x,ridge_y,optic_x,optic_y):

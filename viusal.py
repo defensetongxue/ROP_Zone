@@ -3,7 +3,7 @@ from PIL import Image,ImageDraw,ImageFont
 import numpy as np
 import json,os
 
-def visual_mask(image_path, ridge_path, point, text, save_path='./tmp.jpg'):
+def visual_mask(image_path, ridge_path, point, text,distance, save_path='./tmp.jpg'):
     # Open the image file.
     image = Image.open(image_path).convert("RGBA")  # Convert image to RGBA
     
@@ -29,6 +29,8 @@ def visual_mask(image_path, ridge_path, point, text, save_path='./tmp.jpg'):
     font = ImageFont.truetype( 'arial.ttf',size=30)  # 20 is the font size. Adjust as needed.
     
     draw.text((10, 10), text, fill="white", font=font)  # Prints the text in the top-left corner with a specified font and size
+    draw.text((10, 50), "Distance: " + str(distance), fill="white", font=font)  # Print distance tex below the label text
+    
     
     # Convert back to RGB mode (no transparency).
     rgb_image = composite.convert("RGB")
@@ -57,5 +59,6 @@ if __name__ =="__main__":
                         data['ridge_diffusion_path'],
                         optic_disc['position'],
                         text=str(angle),
+                        distance=optic_disc['distance'],
                         save_path=f'./experiments/{str(cnt)}/{str(angle)}_{image_name}'
                         )

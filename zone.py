@@ -15,13 +15,13 @@ for image_name in data_orignal:
                 print("? ",image_name," ?")
             continue
         
-        if 'optic_disc_gt' in data:
-            if data['optic_disc_gt']['distance']!='visible':
-                continue
-        else:
-            if data['optic_disc_pred']['distance']!='visible' or\
-                data['optic_disc_pred']['value']<=0.25:
-                continue
+        # if 'optic_disc_gt' in data:
+        #     if data['optic_disc_gt']['distance']!='visible':
+        #         continue
+        # else:
+        #     if data['optic_disc_pred']['distance']!='visible' or\
+        #         data['optic_disc_pred']['value']<=0.25:
+        #         continue
         data_dict[image_name]={
             "ridge_diffusion_path":data_orignal[image_name]["ridge_diffusion_path"],
             "zone":data["zone"],
