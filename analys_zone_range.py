@@ -57,32 +57,27 @@ for distance in data_angle_list:
         data_angle_list[distance][zone] = remove_outliers(data_angle_list[distance][zone])
 
 dividing={
-    'visible':[],'near':[],'far':[]
+    'visible':0,'near':11.5,'far':30
 }
 # Assuming data_angle_list is populated as before
 
-for distance in data_angle_list:
     # Calculate dividing values between zones
-    a = get_dividing(data_angle_list[distance][1], data_angle_list[distance][2])
-    b = get_dividing(data_angle_list[distance][2], data_angle_list[distance][3])
+a = get_dividing(data_angle_list['visible'][1], data_angle_list['visible'][2])
+b = get_dividing(data_angle_list['visible'][2], data_angle_list['visible'][3])
     
-    # Assign the dividing values to the respective distance category
-    dividing[distance] = [a, b]
 
 for image_name in data_dict:
     data = data_dict[image_name]
     if 'zone_pred' in data:
         distance = data['optic_disc_pred']["distance"]
-        angle = data['zone_pred']["min_angle"]
-        a, b = dividing[distance]
-        
         # Classify into zones based on dividing values
+        angle=data['zone_pred']['min_angle']+dividing[distance]
         if angle < a:
             data['zone_pred']['zone'] = 1
         elif angle >= a and angle < b:
             data['zone_pred']['zone'] = 2
         else:
             data['zone_pred']['zone'] = 3
-
-with open(os.path.join(data_path,'annotations.json'),'w') as f:
-    json.dump(data_dict,f)
+print(a,b)
+# with open(os.path.join(data_path,'annotations.json'),'w') as f:
+#     json.dump(data_dict,f)
