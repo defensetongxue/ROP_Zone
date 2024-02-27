@@ -4,13 +4,14 @@ import json
 import os
 import random
 
-def visual_mask(image_path, ridge_path, zone_pred, optic_disc, distance, save_path='./tmp.jpg'):
+def visual_zone(image_path, ridge_path, zone_pred, optic_disc, distance, save_path='./tmp.jpg',ridge_threshold=0.5):
     # Open the image file.
     image = Image.open(image_path).convert("RGBA")
 
     # Create a blue mask.
     mask = Image.open(ridge_path).convert('L')
     mask_np = np.array(mask)
+    mask_np=np.where(mask_np>255*ridge_threshold,1,0)
     mask_blue = np.zeros((mask_np.shape[0], mask_np.shape[1], 4), dtype=np.uint8)
     mask_blue[..., 2] = 255  # Set blue channel to maximum
     mask_blue[..., 3] = (mask_np * 127.5).astype(np.uint8)  # Adjust alpha channel
@@ -57,7 +58,7 @@ def visual_mask(image_path, ridge_path, zone_pred, optic_disc, distance, save_pa
 if __name__ == "__main__":
     with open('../autodl-tmp/dataset_ROP/annotations.json', 'r') as f:
         data_dict = json.load(f)
-    
+    print(data_dict['1708.jpg'])
     visual_number = {
         "near": 10,
         "far": 10,
@@ -71,18 +72,24 @@ if __name__ == "__main__":
     # Shuffle the data_dict keys for random iteration
     items = list(data_dict.items())
     random.shuffle(items)
-
+    white='1708.jpg'
     for image_name, data in items:
+        if image_name ==white:
+            print(data)
         if 'zone_pred' not in data:
             continue
         optic_disc = data['optic_disc_pred']
         
         visual_number[optic_disc["distance"]] -= 1
-        if visual_number[optic_disc["distance"]] < 0 or ("ridge_visual_path" not in data):
+        if data['stage']!=3:
+            continue
+        if ("ridge_visual_path" not in data) or 'ridge' not in data:
+            continue
+        if visual_number[optic_disc["distance"]] < 0 and image_name not in white:
             continue
         
-        visual_mask(data['image_path'],
-                    data["ridge_visual_path"],
+        visual_zone(data['image_path'],
+                    data["ridge_seg"]["ridge_seg_path"],
                     zone_pred=data["zone_pred"],
                     optic_disc=data['optic_disc_pred']["position"],
                     distance=optic_disc['distance'],

@@ -54,12 +54,11 @@ class ZoneProcesser():
             samples.append([x,y])
         return samples
     
-    def _get_angle(self, ridge_path, optic_disc_coordinate, distance):
+    def _get_angle(self, ridge_path, optic_disc_coordinate, ridge_threshold=0.5):
         optic_x, optic_y = self._get_xy(optic_disc_coordinate[0], optic_disc_coordinate[1])
-        print(ridge_path)
         ridge = Image.open(ridge_path).convert('L')
         ridge = np.array(ridge)
-        ridge[ridge > 0] = 1
+        ridge=np.where(ridge>int(255*ridge_threshold),1,0)
         samples = self.ridge_sample(ridge)
 
         angles = []
