@@ -1,9 +1,8 @@
 from PIL import Image, ImageDraw, ImageFont
 import numpy as np
-import json
-import os
-import shutil
-
+import matplotlib.pyplot as plt
+from matplotlib.font_manager import FontProperties
+import json,os
 def visual_zone(image_path, ridge_path, zone_pred, optic_disc, distance, save_path='./tmp.jpg',ridge_threshold=0.5):
     # Open the image file.
     image = Image.open(image_path).convert("RGBA")
@@ -67,66 +66,55 @@ def visual_zone(image_path, ridge_path, zone_pred, optic_disc, distance, save_pa
     rgb_image = composite.convert("RGB")
     rgb_image.save(save_path)
 
-def check(image_path, zone, save_path):
-    # Load the image
-    image = Image.open(image_path).convert("RGBA")
+# Example data
+with open('../autodl-tmp/dataset_ROP/annotations.json', 'r') as f:
+    data_dict = json.load(f)
     
-    # Prepare to draw on the image
-    draw = ImageDraw.Draw(image)
-    
-    # Load the font
-    font_path = 'arial.ttf'  # Ensure this path is correct for your environment
-    font = ImageFont.truetype(font_path, size=40)  # Adjust font size as needed
-    
-    # Text to be drawn
-    text = f"Zone Predict: {zone}"
-    
-    # Use textbbox to calculate text width and height
-    text_bbox = draw.textbbox((0, 0), text, font=font)
-    text_width = text_bbox[2] - text_bbox[0]
-    text_height = text_bbox[3] - text_bbox[1]
-    
-    # Calculate text position at the bottom left
-    image_width, image_height = image.size
-    text_bottom_y = image_height - text_height - 10  # 10 pixels from the bottom
-    
-    # Draw the text
-    draw.text((10, text_bottom_y), text, fill="white", font=font)
-    
-    # Convert back to RGB and save the image
-    rgb_image = image.convert("RGB")
-    rgb_image.save(save_path)
-
-data_path='../autodl-tmp/dataset_ROP'
-with open(os.path.join(data_path,'annotations.json'),'r') as f:
-    data_dict=json.load(f)
-cnt=0
-zone_folder=['3']
-for zone in zone_folder:
-    os.makedirs('./experiments/'+zone,exist_ok=True)
+zone_list={
+    1:[],
+    2:[],
+    3:[]
+}
+angle_add={
+    'visible':0,
+    'near':20,
+    'far':35
+}
+check_list=['2','3']
+for  zone in check_list:
+    os.makedirs(f'./experiments/{zone}',exist_ok=True)
     os.system(f"rm -rf ./experiments/{zone}/*")
 for image_name in data_dict:
-    data = data_dict[image_name]
-    if data['stage']>0:
-        if 'zone_pred' not in data:
-            print(f"{image_name} not have the zone_pred")
-            continue
-        if "ridge_seg" not in data:
-            print(f"ridge_seg not in {image_name}")
-            continue
-        if "ridge_seg_path" not in data["ridge_seg"]:
-            print(f"ridge_seg_path not in {image_name}")
-            check(data['image_path'],data['zone'],save_path='./experiments/check/'+image_name)
-            continue
-        if data["zone"]!=3:
-            continue
-            
+    data=data_dict[image_name]
+    if isinstance(data,int):
+        print(image_name,data)
+        continue
+    if 'zone_pred' not in data:
+        continue
+    if data['zone']<=0:
+        continue
+    if 'ridge_seg' not in data:
+        continue
+    if "ridge_seg_path" not in data['ridge_seg']:
+        continue
+    distance = data['optic_disc_pred']["distance"]
+    angle=data['zone_pred']["min_angle"]+angle_add[distance]
+    save_name= str(angle)+'_'+image_name
+    if data['zone']==2 and angle>=80:
         visual_zone(
                 image_path=data['image_path'],
                 ridge_path=data["ridge_seg"]["ridge_seg_path"],
                 zone_pred=data["zone_pred"],
                     optic_disc=data['optic_disc_pred']["position"],
                     distance=data['optic_disc_pred']['distance'],
-                    save_path=f"./experiments/3/{image_name}"
+                    save_path=f"./experiments/2/{save_name}"
             )
-        
+    if data['zone']==3 and angle<=85:
+        visual_zone(
+                image_path=data['image_path'],
+                ridge_path=data["ridge_seg"]["ridge_seg_path"],
+                zone_pred=data["zone_pred"],
+                    optic_disc=data['optic_disc_pred']["position"],
+                    distance=data['optic_disc_pred']['distance'],
+                    save_path=f"./experiments/3/{save_name}"
+            )
