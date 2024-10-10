@@ -84,28 +84,40 @@ class ZoneProcesser():
         }
         
         return result
-    
+    def _get_sample_list(self,ridge_path, optic_disc_coordinate, ridge_threshold=0.5):
+        optic_x, optic_y = self._get_xy(optic_disc_coordinate[0], optic_disc_coordinate[1])
+        ridge = Image.open(ridge_path).convert('L')
+        ridge = np.array(ridge)
+        ridge=np.where(ridge>int(255*ridge_threshold),1,0)
+        samples = self.ridge_sample(ridge)
+
+        angle_list=[]
+        for x, y in samples:
+            angle = self.calculate_angle(x, y, optic_x, optic_y)
+            angle_list.append([x,y,angle])
+        return angle_list
 class CropPadding:
     def __init__(self,box=(80, 0, 1570, 1200)):
         self.box=box
     def __call__(self,img) :
         return img.crop(self.box)
+if __name__=='__main__':
+    data_path='../autodl-tmp/dataset_ROP'
+    with open(os.path.join(data_path,'annotations.json'),'r') as f:
+        data_dict=json.load(f)
     
-data_path='../autodl-tmp/dataset_ROP'
-with open(os.path.join(data_path,'annotations.json'),'r') as f:
-    data_dict=json.load(f)
-
-# simplify the data 
-processer=ZoneProcesser()
-for image_name in data_dict:
-# for image_name in test_list:
-    data=data_dict[image_name]
-    optic_disc=data['optic_disc_pred']
-    # if optic_disc['distance']!='visible':
-    #     continue
-    if "ridge_seg" in data and "ridge_seg_path" in data["ridge_seg"]:
-        angle=processer._get_angle(data["ridge_seg"]["ridge_seg_path"],optic_disc["position"])
-        # zone[data['zone']-1].append((image_name,angle))
-        data_dict[image_name]['zone_pred']=angle
-with open(os.path.join(data_path,'annotations.json'),'w') as f:
-    json.dump(data_dict,f)
+    # simplify the data 
+    processer=ZoneProcesser()
+    for image_name in data_dict:
+    # for image_name in test_list:
+        data=data_dict[image_name]
+        optic_disc=data['optic_disc_pred']
+        # if optic_disc['distance']!='visible':
+        #     continue
+        if "ridge_seg" in data and "ridge_seg_path" in data["ridge_seg"]:
+            angle=processer._get_angle(data["ridge_seg"]["ridge_seg_path"],optic_disc["position"])
+            # zone[data['zone']-1].append((image_name,angle))
+            data_dict[image_name]['zone_pred']=angle
+    with open(os.path.join(data_path,'annotations.json'),'w') as f:
+        json.dump(data_dict,f)
+    
