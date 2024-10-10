@@ -1,10 +1,12 @@
 import os,json
+from shutil import copy
 foshan_path='../autodl-tmp/dataset_ROP'
 shenzhen_path='../autodl-tmp/ROP_shen'
 path_list=[foshan_path,shenzhen_path]
 zone_list={
     1:[],2:[],3:[]
 }
+cnt=0
 for data_path in path_list:
     with open(os.path.join(data_path,'annotations.json'),'r') as f:
         data_dict=json.load(f)
@@ -25,6 +27,9 @@ for data_path in path_list:
         distance = data['optic_disc_pred']["distance"]
         angle=data['zone_pred']["min_angle"]+angle_add[distance]
         zone_list[data['zone']].append(angle)
-        
+        if data['zone']==3:
+            copy(data['image_path'],'./experiments/3/'+image_name)
+            cnt+=1
+    print(cnt)
 with open('./experiments/zone_list.json','w') as f:
     json.dump(zone_list,f)

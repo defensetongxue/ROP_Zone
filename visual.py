@@ -58,7 +58,6 @@ def visual_zone(image_path, ridge_path, zone_pred, optic_disc, distance, save_pa
 if __name__ == "__main__":
     with open('../autodl-tmp/dataset_ROP/annotations.json', 'r') as f:
         data_dict = json.load(f)
-    print(data_dict['1708.jpg'])
     visual_number = {
         "near": 10,
         "far": 10,
@@ -71,22 +70,10 @@ if __name__ == "__main__":
         os.system(f"rm -rf {os.path.join('experiments', distance_item)}/*")
     # Shuffle the data_dict keys for random iteration
     items = list(data_dict.items())
-    random.shuffle(items)
-    white='1708.jpg'
     for image_name, data in items:
-        if image_name ==white:
-            print(data)
         if 'zone_pred' not in data:
             continue
         optic_disc = data['optic_disc_pred']
-        
-        visual_number[optic_disc["distance"]] -= 1
-        if data['stage']!=3:
-            continue
-        if ("ridge_visual_path" not in data) or 'ridge' not in data:
-            continue
-        if visual_number[optic_disc["distance"]] < 0 and image_name not in white:
-            continue
         
         visual_zone(data['image_path'],
                     data["ridge_seg"]["ridge_seg_path"],
